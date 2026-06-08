@@ -25,27 +25,39 @@ jobs:
         with:
           packages: 'platforms;android-34 build-tools;34.0.0 ndk;27.2.12479018 cmake;3.22.1'
 
-      - name: Download MNN SDK
+      - name: Download MNN SDK (so + headers)
         run: |
-          MNN_VERSION="2.9.0"
+          MNN_VERSION="3.5.0"
           MNN_DIR="app/src/main/cpp/third_party/MNN"
           mkdir -p "$MNN_DIR"
 
-          echo "Downloading MNN ${MNN_VERSION} AAR..."
-          curl -L -o /tmp/mnn.aar \
-            "https://github.com/alibaba/MNN/releases/download/${MNN_VERSION}/MNN-${MNN_VERSION}-android.aar"
+          # 1. Download prebuilt .so files
+          echo "Downloading MNN ${MNN_VERSION} prebuilt libs..."
+          curl -L -o /tmp/mnn_libs.zip \
+            "https://github.com/alibaba/MNN/releases/download/${MNN_VERSION}/mnn_${MNN_VERSION}_android_armv7_armv8_cpu_opencl_vulkan.zip"
 
-          echo "Extracting MNN AAR..."
-          mkdir -p /tmp/mnn_extract
-          unzip -q -o /tmp/mnn.aar -d /tmp/mnn_extract
-
-          cp -r /tmp/mnn_extract/jni/include/* "$MNN_DIR/include/" 2>/dev/null || true
+          echo "Extracting MNN libs..."
+          unzip -q -o /tmp/mnn_libs.zip -d /tmp/mnn_extract
+          EXTRACT_DIR=$(ls -d /tmp/mnn_extract/mnn_*/)
           mkdir -p "$MNN_DIR/libs/arm64-v8a"
-          cp /tmp/mnn_extract/jni/arm64-v8a/*.so "$MNN_DIR/libs/arm64-v8a/" 2>/dev/null || true
+          cp "$EXTRACT_DIR/arm64-v8a/"*.so "$MNN_DIR/libs/arm64-v8a/" 2>/dev/null || true
+
+          # 2. Download MNN headers from source tarball
+          echo "Downloading MNN headers..."
+          curl -L -o /tmp/mnn_src.tar.gz \
+            "https://github.com/alibaba/MNN/archive/refs/tags/${MNN_VERSION}.tar.gz"
+          mkdir -p /tmp/mnn_src
+          tar -xzf /tmp/mnn_src.tar.gz -C /tmp/mnn_src
+          SRC_DIR=$(ls -d /tmp/mnn_src/MNN-*/)
+          mkdir -p "$MNN_DIR/include"
+          cp -r "$SRC_DIR/include/"* "$MNN_DIR/include/" 2>/dev/null || true
 
           echo "MNN SDK installed:"
-          ls -la "$MNN_DIR/libs/arm64-v8a/"
+          echo "  Libs:"
+          ls -la "$MNN_DIR/libs/arm64-v8a/" | head -20
+          echo "  Headers:"
           ls "$MNN_DIR/include/"
+          ls "$MNN_DIR/include/MNN/" | head -10
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
