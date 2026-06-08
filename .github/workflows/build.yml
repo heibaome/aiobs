@@ -1,0 +1,71 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-34 build-tools;34.0.0 ndk;27.2.12479018 cmake;3.22.1'
+
+      - name: Download MNN SDK
+        run: |
+          MNN_VERSION="2.9.0"
+          MNN_DIR="app/src/main/cpp/third_party/MNN"
+          mkdir -p "$MNN_DIR"
+
+          echo "Downloading MNN ${MNN_VERSION} AAR..."
+          curl -L -o /tmp/mnn.aar \
+            "https://github.com/alibaba/MNN/releases/download/${MNN_VERSION}/MNN-${MNN_VERSION}-android.aar"
+
+          echo "Extracting MNN AAR..."
+          mkdir -p /tmp/mnn_extract
+          unzip -q -o /tmp/mnn.aar -d /tmp/mnn_extract
+
+          cp -r /tmp/mnn_extract/jni/include/* "$MNN_DIR/include/" 2>/dev/null || true
+          mkdir -p "$MNN_DIR/libs/arm64-v8a"
+          cp /tmp/mnn_extract/jni/arm64-v8a/*.so "$MNN_DIR/libs/arm64-v8a/" 2>/dev/null || true
+
+          echo "MNN SDK installed:"
+          ls -la "$MNN_DIR/libs/arm64-v8a/"
+          ls "$MNN_DIR/include/"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.5"
+
+      - name: Ensure model placeholder
+        run: |
+          mkdir -p app/src/main/assets
+          if [ ! -f app/src/main/assets/yolov8n_int8_192.mnn ]; then
+            echo "Creating model placeholder (model conversion requires Python + MNN tools)"
+            touch app/src/main/assets/yolov8n_int8_192.mnn.placeholder
+          fi
+
+      - name: Build release APK
+        run: gradle assembleRelease
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 30
