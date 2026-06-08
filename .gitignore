@@ -1,0 +1,34 @@
+# Build outputs
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/app/build
+/captures
+.externalNativeBuild
+.cxx
+
+# MNN SDK (downloaded by setup.sh)
+/app/src/main/cpp/third_party/
+
+# Model files (generated, too large for git)
+*.mnn
+*.onnx
+*.pt
+*.bin
+*.param
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug
+*.hprof

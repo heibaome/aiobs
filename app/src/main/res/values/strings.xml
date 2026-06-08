@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AutoAim</string>
+    <string name="service_channel">AutoAim 后台服务</string>
+    <string name="service_running">AutoAim 运行中</string>
+</resources>
