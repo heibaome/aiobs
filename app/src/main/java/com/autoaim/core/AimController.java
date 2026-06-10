@@ -199,6 +199,8 @@ public class AimController {
 
     public void setDeadZone(float pixels) { this.deadZone = pixels; }
     public void setPredictionFactor(float factor) { this.predictionFactor = factor; }
+    public float getScreenCenterX() { return screenCenterX; }
+    public float getScreenCenterY() { return screenCenterY; }
 
     /**
      * 瞄准结果

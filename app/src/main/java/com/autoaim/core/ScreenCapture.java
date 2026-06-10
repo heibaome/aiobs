@@ -117,8 +117,8 @@ public class ScreenCapture {
                 captureWidth, captureHeight, 1,  // 1 dpi，反正只看像素
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 imageReader.getSurface(),
-                captureHandler,
-                null
+                null,
+                captureHandler
         );
 
         isCapturing.set(true);

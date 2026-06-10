@@ -17,6 +17,14 @@ public class ValorantConfig {
 
     private static final String PREFS_NAME = "valorant_aim_config";
 
+    // 武器类型
+    public enum WeaponType {
+        RIFLE, SMG, SNIPER, SHOTGUN, PISTOL, HEAVY
+    }
+
+    /** 当前武器 */
+    public WeaponType currentWeapon = WeaponType.RIFLE;
+
     // ============================================================
     // 游戏参数（基于无畏契约手游特性）
     // ============================================================

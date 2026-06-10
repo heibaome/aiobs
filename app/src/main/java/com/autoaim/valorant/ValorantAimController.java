@@ -23,16 +23,6 @@ public class ValorantAimController {
 
     private static final String TAG = "ValorantAim";
 
-    // 当前武器类型
-    public enum WeaponType {
-        RIFLE,      // 步枪 (Vandal/Phantom/Guardian)
-        SMG,        // 冲锋枪 (Spectre/Stinger)
-        SNIPER,     // 狙击 (Operator/Marshal)
-        SHOTGUN,    // 霰弹枪 (Judge/Bucky)
-        PISTOL,     // 手枪 (Sheriff/Ghost/Classic)
-        HEAVY       // 重武器 (Ares/Odin)
-    }
-
     private final ValorantConfig config;
     private final AimController aimController;
 
@@ -43,7 +33,7 @@ public class ValorantAimController {
     private volatile long lastFireTime = 0;
 
     // 当前武器
-    private WeaponType currentWeapon = WeaponType.RIFLE;
+    private ValorantConfig.WeaponType currentWeapon = ValorantConfig.WeaponType.RIFLE;
 
     // 屏幕参数
     private int screenW, screenH;
@@ -66,7 +56,7 @@ public class ValorantAimController {
     /**
      * 设置当前武器
      */
-    public void setWeapon(WeaponType weapon) {
+    public void setWeapon(ValorantConfig.WeaponType weapon) {
         if (this.currentWeapon != weapon) {
             this.currentWeapon = weapon;
             resetRecoil();
@@ -163,7 +153,7 @@ public class ValorantAimController {
             score += (1 - det.score) * 200;
 
             // 头部优先（小目标可能是头部）
-            if (currentWeapon == WeaponType.SNIPER || currentWeapon == WeaponType.RIFLE) {
+            if (currentWeapon == ValorantConfig.WeaponType.SNIPER || currentWeapon == ValorantConfig.WeaponType.RIFLE) {
                 // 步枪/狙击：偏好较小目标（头部）
                 if (boxArea < 5000) {
                     score -= 50;  // 奖励小目标
@@ -210,7 +200,7 @@ public class ValorantAimController {
             }
 
             // 狙击模式始终瞄头
-            if (currentWeapon == WeaponType.SNIPER) {
+            if (currentWeapon == ValorantConfig.WeaponType.SNIPER) {
                 aimPart = 1;
             }
         }
@@ -243,10 +233,10 @@ public class ValorantAimController {
         if (target.score < config.confThreshold + 0.1f) return false;
 
         // 狙击模式：必须非常准才开火
-        if (currentWeapon == WeaponType.SNIPER && distance > 50) return false;
+        if (currentWeapon == ValorantConfig.WeaponType.SNIPER && distance > 50) return false;
 
         // 霰弹模式：近距离才开火
-        if (currentWeapon == WeaponType.SHOTGUN && distance > 150) return false;
+        if (currentWeapon == ValorantConfig.WeaponType.SHOTGUN && distance > 150) return false;
 
         return true;
     }

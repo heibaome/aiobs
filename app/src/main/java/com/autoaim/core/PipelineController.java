@@ -134,8 +134,8 @@ public class PipelineController {
                 AimController.AimResult aimResult = aimController.calculate(detections);
                 if (aimResult == null) continue;
 
-                float currentX = aimController.screenCenterX;
-                float currentY = aimController.screenCenterY;
+                float currentX = aimController.getScreenCenterX();
+                float currentY = aimController.getScreenCenterY();
                 boolean shouldFire = autoFire && aimResult.inFireZone(fireThreshold);
 
                 // 推入触控队列（容量1，旧的自动丢弃）
