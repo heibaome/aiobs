@@ -7,6 +7,16 @@
 #include <MNN/Tensor.hpp>
 #include <MNN/ImageProcess.hpp>
 
+// ============================================================
+// 工具函数（必须在 extern "C" 之前定义）
+// ============================================================
+
+static long getCurrentTimeMs() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+
 #define TAG "MNN_Native"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
@@ -136,8 +146,7 @@ Java_com_autoaim_core_MNNInference_nativeDetect(
     // 即使模型是 INT8 量化输入也能自动处理
     auto inputDims = inputTensor->shape();
     std::shared_ptr<MNN::Tensor> wrapTensor(
-        MNN::Tensor::create(inputDims, halide_type_of<float>(), inputPtr,
-                            MNN::Tensor::CAFFE));
+        MNN::Tensor::create(inputDims, halide_type_of<float>(), inputPtr));
     inputTensor->copyFromHostTensor(wrapTensor.get());
 
     // 执行推理
@@ -167,8 +176,7 @@ Java_com_autoaim_core_MNNInference_nativeDetect(
 
     // 使用 copyToHostTensor 确保从量化格式正确转换为 float
     std::shared_ptr<MNN::Tensor> outHost(
-        MNN::Tensor::create(outputShape, halide_type_of<float>(),
-                            MNN::Tensor::CAFFE));
+        MNN::Tensor::create(outputShape, halide_type_of<float>()));
     outputTensor->copyToHostTensor(outHost.get());
     env->SetFloatArrayRegion(result, 0, totalElements, outHost->host<float>());
 
@@ -212,13 +220,3 @@ Java_com_autoaim_core_MNNInference_nativeDestroy(
 }
 
 } // extern "C"
-
-// ============================================================
-// 工具函数
-// ============================================================
-
-static long getCurrentTimeMs() {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
-}
